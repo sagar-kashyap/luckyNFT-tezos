@@ -28,7 +28,7 @@ export default function ModalComponent(props:any) {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">Modal Title</ModalHeader>
+              <ModalHeader className="flex flex-col gap-1">Try Again</ModalHeader>
               <ModalBody>
                <p>Want to try again??</p>
               </ModalBody>
