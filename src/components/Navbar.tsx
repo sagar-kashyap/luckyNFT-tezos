@@ -1,36 +1,49 @@
-import React, { useEffect, useState } from "react";
+import React, { useState,useEffect } from "react";
+import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button} from "@nextui-org/react";
 import { connectWallet, getAccount } from "../utils/wallet";
 
-const Navbar: React.FC = () => {
-  const [account, setAccount] = useState<string>("");
+export default function NavbarComponent() {
+ 
 
-  useEffect(() => {
-    (async () => {
-      // TODO 5.b - Get the active account
-      setAccount("");
-    })();
-  }, []);
+  const [account,setAccount]=useState("")
 
-  // TODO 4.a - Complete onConnectWallet function
-  const onConnectWallet = async () => {
-  };
+  useEffect(()=>{(async ()=>{
+
+    const account=await getAccount();
+    setAccount(account)
+  })();
+  },[])
+
+  const onConnectWallet=async()=>{
+    await connectWallet()
+    const data=await getAccount()
+    setAccount(data)
+
+  }
 
   return (
-    <div className="navbar navbar-dark bg-dark fixed-top">
-      <div className="container py-2">
-        <a href="/" className="navbar-brand">
-          Tezos Lottery
-        </a>
-        <div className="d-flex">
-          {/* TODO 4.b - Call connectWallet function onClick  */}
-          <button  className="btn btn-outline-info">
-            {/* TODO 5.a - Show account address if wallet is connected */}
+    <Navbar>
+      <NavbarBrand>
+        <p className="font-bold text-inherit">LUCKY NFT <small> (Build with TEZOS)</small></p>
+      </NavbarBrand>
+      <NavbarContent justify="center">
+        <NavbarItem>
+          {account?
+            <Button isDisabled color="warning" variant="flat">
+          {account}
+          </Button>:null
+          }
+        </NavbarItem>
+      </NavbarContent>
+      <NavbarContent justify="end">
+        <NavbarItem className="hidden lg:flex">
+        </NavbarItem>
+        <NavbarItem>
+          <Button as={Link} color="primary" href="#" variant="flat" onClick={()=>onConnectWallet()}>
             Connect Wallet
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </NavbarItem>
+      </NavbarContent>
+    </Navbar>
   );
-};
-
-export default Navbar;
+}
