@@ -11,7 +11,7 @@ export const getNFT=async()=>{
             include_orders: 'false'
         },
         headers: {
-            'X-RapidAPI-Key': '--your-key-here--',
+            'X-RapidAPI-Key': '3883fbdc98mshe4ee32882ea57cfp1b0905jsn6f045dccf9df',
             'X-RapidAPI-Host': 'opensea13.p.rapidapi.com'
         }
     };
