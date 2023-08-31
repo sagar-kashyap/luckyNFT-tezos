@@ -1,78 +1,122 @@
 import smartpy as sp
 
-# A SmartPy module
+from templates import fa2_lib as fa2
+from templates import fa2_lib_testing as testing
+
+administrator = sp.test_account("Administrator")
+alice = sp.test_account("Alice")
+tok0_md = fa2.make_metadata(name="Token Zero", decimals=1, symbol="Tok0")
+tok1_md = fa2.make_metadata(name="Token One", decimals=1, symbol="Tok1")
+tok2_md = fa2.make_metadata(name="Token Two", decimals=1, symbol="Tok2")
+TOKEN_METADATA = [tok0_md, tok1_md, tok2_md]
+METADATA = sp.utils.metadata_of_url("ipfs://QmRGyq6Kj6cAc8MQff6DfMyFa5XdCHjtxsXoV6yaMz4Qoc")
+
+main = fa2.main
+
+
 @sp.module
-def main():
-    # A class of contracts
-    class Lottery(sp.Contract):
-        def __init__(self):
-            self.data = sp.record(
-                players = {},
-                ticket_cost = sp.tez(1),
-                tickets_available = sp.nat(5),
-                max_tickets = sp.nat(5),
-            )
-            
-        @sp.entrypoint
-        def buy_ticket(self):
-            assert self.data.tickets_available > 0, "NO_TICKETS_AVAILABLE"
-            assert sp.amount >= self.data.ticket_cost, "INVALID_AMOUNT"
-            self.data.players[sp.len(self.data.players)] = sp.sender
-            self.data.tickets_available = sp.as_nat(self.data.tickets_available - 1)
-    
-            # Return extra tez balance to the sender
-            extra_balance = sp.amount - self.data.ticket_cost
-            if extra_balance > sp.mutez(0):
-                sp.send(sp.sender, extra_balance)
+def m():
+    # Order of inheritance: [Admin], [<policy>], <base class>, [<mixins>]
 
-        @sp.entrypoint
-        def end_game(self):
-    
-            # Sanity checks
-            assert self.data.tickets_available == 0, "GAME_IS_YET_TO_END"
-    
-            # Pick a winner
-            winner_id = sp.mod(sp.as_nat(sp.now - sp.timestamp(0)), self.data.max_tickets)
-            winner_address = self.data.players[winner_id]
-    
-            # Send the reward to the winner
-            sp.send(winner_address, sp.balance)
-    
-            # Reset the game
-            self.data.players = {}
-            self.data.tickets_available = self.data.max_tickets
+    class NftTestFull(
+        main.Admin,
+        main.Nft,
+        main.ChangeMetadata,
+        main.WithdrawMutez,
+        main.MintNft,
+        main.BurnNft,
+        main.OffchainviewTokenMetadata,
+        main.OnchainviewBalanceOf,
+    ):
+        def __init__(self, administrator, metadata, ledger, token_metadata):
+            main.OnchainviewBalanceOf.__init__(self)
+            main.OffchainviewTokenMetadata.__init__(self)
+            main.BurnNft.__init__(self)
+            main.MintNft.__init__(self)
+            main.WithdrawMutez.__init__(self)
+            main.ChangeMetadata.__init__(self)
+            main.Nft.__init__(self, metadata, ledger, token_metadata)
+            main.Admin.__init__(self, administrator)
+
+    class NftTestNoTransfer(main.NoTransfer, main.Nft):
+        def __init__(self, metadata, ledger, token_metadata):
+            main.Nft.__init__(self, metadata, ledger, token_metadata)
+            main.NoTransfer.__init__(self)
+
+    class NftTestOwnerTransfer(main.OwnerTransfer, main.Nft):
+        def __init__(self, metadata, ledger, token_metadata):
+            main.Nft.__init__(self, metadata, ledger, token_metadata)
+            main.OwnerTransfer.__init__(self)
+
+    class NftTestPauseOwnerOrOperatorTransfer(
+        main.Admin, main.PauseOwnerOrOperatorTransfer, main.Nft
+    ):
+        def __init__(self, administrator, metadata, ledger, token_metadata):
+            main.Nft.__init__(self, metadata, ledger, token_metadata)
+            main.PauseOwnerOrOperatorTransfer.__init__(self)
+            main.Admin.__init__(self, administrator)
 
 
-# Tests
-if "templates" not in __name__:
-    @sp.add_test(name="Lottery")
-    def test():
-        scenario = sp.test_scenario(main)
-        scenario.h1("Lottery Contract")
-        
-        admin = sp.test_account("admin")
-        alice = sp.test_account("alice")
-        bob = sp.test_account("bob")
-        mike = sp.test_account("mike")
-        charles = sp.test_account("charles")
-        john = sp.test_account("john")
-    
-        scenario.h1("Accounts")
-        scenario.show([admin, alice, bob, mike, charles, john])
-        lottery = main.Lottery()
-        scenario += lottery
-        
-        # buy_ticket
-        scenario.h2("buy_ticket (valid test)")
-        lottery.buy_ticket().run(amount = sp.tez(1), sender = alice)
-        lottery.buy_ticket().run(amount = sp.tez(2), sender = bob)
-        lottery.buy_ticket().run(amount = sp.tez(3), sender = john)
-        lottery.buy_ticket().run(amount = sp.tez(1), sender = charles)
-        lottery.buy_ticket().run(amount = sp.tez(1), sender = mike)
-    
-        scenario.h2("buy_ticket (failure test)")
-        lottery.buy_ticket().run(amount = sp.tez(1), sender = alice, valid = False)
-    
-        # end_game
-        scenario.h2("end_game (valid test)")
-        lottery.end_game().run(sender = admin, now = sp.timestamp(20))
+@sp.add_test(name="NFT", is_default=True)
+def test():
+    ledger = {0: alice.address, 1: alice.address, 2: alice.address}
+    token_metadata = TOKEN_METADATA
+
+    # Default NFT
+    c1 = m.NftTestFull(
+        administrator=administrator.address,
+        metadata=METADATA,
+        ledger=ledger,
+        token_metadata=token_metadata,
+    )
+
+    # No transfer
+    c2 = m.NftTestNoTransfer(
+        metadata=METADATA,
+        ledger=ledger,
+        token_metadata=token_metadata,
+    )
+
+    # Owner transfer
+    c3 = m.NftTestOwnerTransfer(
+        metadata=METADATA,
+        ledger=ledger,
+        token_metadata=token_metadata,
+    )
+
+    # Empty NFT
+    c4 = m.NftTestFull(
+        administrator=administrator.address,
+        metadata=METADATA,
+        ledger={},
+        token_metadata=[],
+    )
+
+    # Pause owner or operator transfera
+    c5 = m.NftTestPauseOwnerOrOperatorTransfer(
+        administrator=administrator.address,
+        metadata=METADATA,
+        ledger=ledger,
+        token_metadata=token_metadata,
+    )
+
+    kwargs = {"modules": [fa2.t, fa2.main, m], "ledger_type": "NFT"}
+
+    # Standard features
+    testing.test_core_interfaces(c1, **kwargs)
+    testing.test_transfer(c1, **kwargs)
+    testing.test_balance_of(c1, **kwargs)
+    # Policies
+    testing.test_owner_or_operator_transfer(c1, **kwargs)
+    testing.test_no_transfer(c2, **kwargs)
+    testing.test_owner_transfer(c3, **kwargs)
+
+    # Non standard features
+    testing.NS.test_admin(c1, **kwargs)
+    testing.NS.test_mint(c4, **kwargs)
+    testing.NS.test_burn(c1, supports_transfer=True, supports_operator=True, **kwargs)
+    testing.NS.test_withdraw_mutez(c1, **kwargs)
+    testing.NS.test_change_metadata(c1, **kwargs)
+    testing.NS.test_get_balance_of(c1, **kwargs)
+    # Non standard policies
+    testing.NS.test_pause(c5, **kwargs)
