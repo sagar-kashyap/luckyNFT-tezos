@@ -1,6 +1,23 @@
-# Getting Started with Lottery Frontend Dapp
+# Getting Started with Tezos Lucky-NFT
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Deployed Link:-
+https://main--sweet-pixie-a1925e.netlify.app/
+
+## Team Name
+ InnovateNerds
+## Project name
+ LuckyNft-tezos
+
+## Tech Stack used
+
+React.js
+TypeScript
+JavaScript
+NextUI
+SmartPY
+Axios
+Taquito.js
+Tailwind css
 
 ## Available Scripts
 
@@ -11,3 +28,30 @@ To install all dependencies:
 
 To start the project locally:
 ### `npm run dev`
+
+## Game Description
+
+There is a NFT hidden among these cards. Flip a card and try your luck to win an NFT. You get one chance every trial. If you loose click on try again for another chance.
+
+## Images
+
+![Alt text](<Screenshot (146).png>)
+![Alt text](<Screenshot (147).png>)
+![Alt text](<Screenshot (148).png>)
+![Alt text](<Screenshot (149).png>)
+![Alt text](<Screenshot (153).png>)
+![Alt text](<Screenshot (152).png>)
+![Alt text](<Screenshot (151).png>)
+
+## Deployed smart contract link
+
+https://smartpy.io/explorer?address=KT1DVLTCGF6rFtzvmEHCdXvqT3egQ8h8V9Dc
+
+## Github repository link
+
+https://github.com/sagar-kashyap/luckyNFT-tezos
+
+## Team member info
+
+Sagar Kashyap
+Nikhil Kumar
