@@ -35,7 +35,7 @@ There is a NFT hidden among these cards. Flip a card and try your luck to win an
 
 ## Demo Video
 
-https://main--sweet-pixie-a1925e.netlify.app/
+https://drive.google.com/file/d/1GvYnwEITpXEtj0I7BCM9NIGjTKNKT5WJ/view?usp=sharing
 
 ## Images
 
