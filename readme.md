@@ -33,6 +33,10 @@ To start the project locally:
 
 There is a NFT hidden among these cards. Flip a card and try your luck to win an NFT. You get one chance every trial. If you loose click on try again for another chance.
 
+## Demo Video
+
+https://main--sweet-pixie-a1925e.netlify.app/
+
 ## Images
 
 ![Alt text](<Screenshot (146).png>)
